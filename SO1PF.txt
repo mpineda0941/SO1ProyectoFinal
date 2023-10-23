@@ -1,0 +1,114 @@
+import threading
+import time
+#**************************************************************************************************
+#Simulacion de Proceso de Algoritmo de Dekker
+turno = 1
+solicitud_proceso1 = False
+solicitud_proceso2 = False
+
+#Funcionamieno para Primer Proceso
+def ejecucion_proceso1():
+    global turno, solicitud_proceso1, solicitud_proceso2
+
+    solicitud_proceso1 = True
+    turno = 2
+    while solicitud_proceso2 and turno == 2:
+        pass
+
+    # Uso de sección de sección crítica por Proceso 2
+    print("Proceso 1 en región crítica")
+    for i in range(5):
+        time.sleep(1)
+        print(f"Proceso 1: {'*' * (i + 1)}")
+    
+    solicitud_proceso1 = False
+    turno = 2
+
+#Funcionamiento para Segundo Proceso
+def ejecucion_proceso2():
+    global turno, solicitud_proceso1, solicitud_proceso2
+
+    solicitud_proceso2 = True
+    turno = 1
+    while solicitud_proceso1 and turno == 1:
+        pass
+
+    # Uso de sección critica por Proceso 2
+    print("Proceso 2 en región crítica.")
+    for i in range(5):
+        time.sleep(1)
+        print(f"Proceso 2: {'*' * (i + 1)}")
+    
+    solicitud_proceso2 = False
+    turno = 1
+
+#*****************************************************************************************************
+#Simulacion del Problema de Filosofos Comensales
+tenedores = [True] * 5
+
+class Filosofo(threading.Thread):
+    def __init__(self, index, tenedor_izquierdo, tenedor_derecho):
+        threading.Thread.__init__(self)
+        self.index = index
+        self.tenedor_izquierdo = tenedor_izquierdo
+        self.tenedor_derecho = tenedor_derecho
+
+    def comer(self):
+        tenedores[self.tenedor_izquierdo] = False
+        tenedores[self.tenedor_derecho] = False
+        print(f"Filosofo {self.index} esta comiendo\n")
+        time.sleep(4)
+        tenedores[self.tenedor_izquierdo] = True
+        tenedores[self.tenedor_derecho] = True
+        print(f"Filosofo {self.index} ha terminado de comer\n")
+
+    def pensar(self):
+        print(f"Filosofo {self.index} esta pensando\n")
+        time.sleep(4)
+
+    def run(self):
+        for i in range(5):
+            self.pensar()
+            while not tenedores[self.tenedor_izquierdo] or not tenedores[self.tenedor_derecho]:
+                pass
+            self.comer()
+
+#Declaramos Metodo Main como punto inicial de ejecucion del programa
+def main():
+    while True:
+        print("Ingrese una opcion para simulacion de proceso:")
+        print("1. Algoritmo de Dekker")
+        print("2. Problema de los Filósofos Comensales")
+        print("0. Salir")
+        opcion = input()
+
+        if opcion == "1":
+            print("Simulando Algoritmo de Dekker: ")
+            # Crear dos hilos para ejecutar los procesos
+            thread1 = threading.Thread(target=ejecucion_proceso1)
+            thread2 = threading.Thread(target=ejecucion_proceso2)
+
+            # Iniciar los hilos
+            thread1.start()
+            thread2.start()
+
+            # Esperar a que los hilos terminen
+            thread1.join()
+            thread2.join()
+
+            print("Ambos procesos han terminado.")
+
+        elif opcion == "2":
+            print("Simulando problema de Filosofos Comensales: ")
+            Filosofos = [Filosofo(i, i, (i+1)%5) for i in range(5)]
+            for Filosofo in Filosofos:
+                Filosofo.start()
+
+        elif opcion == "0":
+            break
+        
+        else:
+            print("Entrada invalida, ingrese una opcion del menu")
+            
+if __name__ == "__main__":
+    main()
